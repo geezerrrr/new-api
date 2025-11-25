@@ -108,6 +108,12 @@ func Relay(c *gin.Context, relayFormat types.RelayFormat) {
 		return
 	}
 
+	// 记录请求信息
+	requestBody, _ := common.GetRequestBody(c)
+	if len(requestBody) > 0 {
+		logger.LogRequest(c, requestBody)
+	}
+
 	relayInfo, err := relaycommon.GenRelayInfo(c, relayFormat, request, ws)
 	if err != nil {
 		newAPIError = types.NewError(err, types.ErrorCodeGenRelayInfoFailed)
