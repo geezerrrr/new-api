@@ -24,7 +24,7 @@ services:
       - "3000:3000"
     volumes:
       - ./data:/data
-      - ./logs:/app/logs
+      - ./logs:/app/logs  # 包含普通日志和请求日志(requests子目录)
     environment:
       - SQL_DSN=postgresql://root:123456@postgres:5432/new-api # ⚠️ IMPORTANT: Change the password in production!
 #      - SQL_DSN=root:123456@tcp(mysql:3306)/new-api  # Point to the mysql service, uncomment if using MySQL
