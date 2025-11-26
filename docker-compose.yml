@@ -33,6 +33,11 @@ services:
       - ERROR_LOG_ENABLED=true # 是否启用错误日志记录 (Whether to enable error log recording)
       - BATCH_UPDATE_ENABLED=true  # 是否启用批量更新 (Whether to enable batch update)
 #      - STREAMING_TIMEOUT=300  # 流模式无响应超时时间，单位秒，默认120秒，如果出现空补全可以尝试改为更大值 （Streaming timeout in seconds, default is 120s. Increase if experiencing empty completions）
+      # 请求日志配置 (Request log configuration) - logs are stored in ./logs/requests/ with automatic rotation and compression
+#      - REQUEST_LOG_MAX_SIZE=100  # 单个日志文件最大大小(MB)，默认100MB (Max size per log file in MB, default 100MB)
+#      - REQUEST_LOG_MAX_AGE=30    # 日志保留天数，默认30天 (Log retention days, default 30 days)
+#      - REQUEST_LOG_MAX_BACKUPS=10  # 最多保留备份文件数量，默认10个 (Max backup files to keep, default 10)
+#      - REQUEST_LOG_COMPRESS_AGE=1  # 日志压缩时间(天)，默认1天前的日志压缩为.gz (Compress logs older than N days, default 1)
 #      - SESSION_SECRET=random_string  # 多机部署时设置，必须修改这个随机字符串！！ （multi-node deployment, set this to a random string!!!!!!!）
 #      - SYNC_FREQUENCY=60  # Uncomment if regular database syncing is needed
 #      - GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX  # Google Analytics 的测量 ID (Google Analytics Measurement ID)
