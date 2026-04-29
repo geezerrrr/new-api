@@ -1,5 +1,5 @@
 # New-API Docker Compose Configuration
-# 
+#
 # Quick Start:
 #   1. docker-compose up -d
 #   2. Access at http://localhost:3000
@@ -9,6 +9,12 @@
 #   2. Uncomment the mysql service and SQL_DSN line 16
 #   3. Uncomment mysql in depends_on (line 28)
 #   4. Uncomment mysql_data in volumes section (line 64)
+#
+# Optional: WeChat Pay / Alipay direct integration (payment-gateway service):
+#   1. cp payment-gateway/.env.example payment-gateway/.env  &&  edit it
+#   2. mkdir -p payment-gateway/secrets  &&  drop your Alipay/WeChat PEM keys in
+#   3. docker compose --profile payments up -d
+#   The gateway listens on 127.0.0.1:8080; put nginx/Caddy in front for TLS.
 #
 # ⚠️  IMPORTANT: Change all default passwords before deploying to production!
 
@@ -88,6 +94,42 @@ services:
 #      - new-api-network
 #    ports:
 #      - "3306:3306"  # Uncomment if you need to access MySQL from outside Docker
+
+  # Optional: stateless gateway that converts new-api's epay-protocol calls
+  # into direct Alipay / WeChat Pay APIv3 calls. Activate with:
+  #   docker compose --profile payments up -d
+  payment-gateway:
+    profiles: ["payments"]
+    build:
+      context: ./payment-gateway
+      dockerfile: Dockerfile
+    image: new-api-payment-gateway:local
+    container_name: payment-gateway
+    restart: always
+    # Loopback-only — terminate TLS in your reverse proxy (nginx/Caddy/Traefik)
+    # and forward to 127.0.0.1:8080. Alipay/WeChat callback URLs MUST be HTTPS.
+    ports:
+      - "127.0.0.1:8080:8080"
+    env_file:
+      - ./payment-gateway/.env
+    environment:
+      # Override the public URL with the internal DNS name so the gateway
+      # reaches new-api over the docker network (faster + never leaves host).
+      - NEW_API_NOTIFY_URL=http://new-api:3000/api/user/epay/notify
+      - TZ=Asia/Shanghai
+    volumes:
+      # Drop your Alipay app-private-key, Alipay public-key, and WeChat
+      # merchant private-key PEMs here. Paths must match those in .env.
+      - ./payment-gateway/secrets:/run/secrets:ro
+    depends_on:
+      - new-api
+    networks:
+      - new-api-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   pg_data:
